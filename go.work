@@ -1,0 +1,10 @@
+go 1.19
+
+use (
+	./character
+	./character/characterClasses
+	./character/equipment
+	./character/homelands
+	./character/species
+	./dice
+)
