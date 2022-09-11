@@ -12,7 +12,7 @@ type ClassStory struct {
 
 type CharacterClass struct {
 	Name            string
-	CourageModifier string
+	CourageModifier int
 	Dread           string
 	Perks           []string
 	Abilities       []string
@@ -20,7 +20,7 @@ type CharacterClass struct {
 }
 
 var CharacterClasses = map[string]CharacterClass{
-	"Bard": {Name: "Bard", CourageModifier: "12", Dread: "D4",
+	"Bard": {Name: "Bard", CourageModifier: 12, Dread: "D4",
 		Perks: []string{"The Bard's Instrument:\nSoothing, allows the bard to heal allies. Twice per session, roll 1d6 to heal that much courage to an ally.\n" +
 			"Fighting Music, The bard's music can also be epic and thrilling, making for a great soundtrack to a fight. During combat, the Bard's instrument is a ranged weapon that deals dread.\n",
 			"Choose your instrument:\nString Instrument, Your instrument does +1 Healing.\n" +
@@ -56,7 +56,7 @@ var CharacterClasses = map[string]CharacterClass{
 				"_____ is always there to offer wise advice, but sometimes it gets a little old.",
 				"_____ I can tell that _____ doesn't like me much but I'll charm them into friendship!",
 				"_____  and I used to be more than friends, but I swear I don't like them like that anymore."}}},
-	"Dungeoneer": {Name: "Dungeoneer", CourageModifier: "13", Dread: "D8",
+	"Dungeoneer": {Name: "Dungeoneer", CourageModifier: 13, Dread: "D8",
 		Perks: []string{"Choose your underling:\n You have a named NPC underling that follows you around and does stuff for you." +
 			"The have +1 in one stat and -3 in everything else. They have 1 Courage and won't participate in Combat." +
 			"If your underling takes Dread, they go \"on break\" for the rest of the session.\nBrawny: +1 Vigor\nSneaky: +1 Knack\nBrainy: +1Knowhow",
@@ -87,7 +87,7 @@ var CharacterClasses = map[string]CharacterClass{
 				"_____ owes me big time for saving them in the past.",
 				"I would risk my neck to save _____ from any danger, and I expect the same in return.",
 				"I hired _____ for a dangerous adventure a while back, and now we're best buds."}}},
-	"Gnome": {Name: "Gnome", CourageModifier: "14", Dread: "D8",
+	"Gnome": {Name: "Gnome", CourageModifier: 14, Dread: "D8",
 		Perks: []string{"Choose your hat:\nSpring Hat: (Green, Yellow, Pink, or Light Blue) Once per session, mend a mundane item." +
 			"Autumn Hat: (Brown, Gold, Orange, or Red) Once per session, change the color of something." +
 			"Winter Hat: (Dark Blue, Purple, Grey or White) Once per session, warm something up by touch.",
@@ -126,7 +126,7 @@ var CharacterClasses = map[string]CharacterClass{
 				"_____ and I often while away the hours discussing literature, tea, and daffodils.",
 				"_____ is a rapscallion, but they have earned my trust so far.",
 				"_____ believes there is no good left in the world, but I will prove them wrong."}}},
-	"Knight-errant": {Name: "Knight-errant", CourageModifier: "15", Dread: "D10",
+	"Knight-errant": {Name: "Knight-errant", CourageModifier: 15, Dread: "D10",
 		Perks: []string{"Choose your equipment:\nMagnificent Sword: [trusty] can't be fumbled or accidentally dropped\n" +
 			"Magnificent Breastplate: [sturdy] 1 Block; cannot be broken\n" +
 			"Magnificent Banner: [lucky] Once per session, reroll an Inspire Check\n",
@@ -164,7 +164,7 @@ var CharacterClasses = map[string]CharacterClass{
 				"_____ is a bit of a know-it-all, but hads never let me down.",
 				"_____ and I crossed paths once as enemies, but now travel as companions.",
 				"I worry that _____ has gone astray, so I'lll do my best to keep them on the straight and narrow."}}},
-	"Loyal Chum": {Name: "Loyal Chum", CourageModifier: "13", Dread: "D6",
+	"Loyal Chum": {Name: "Loyal Chum", CourageModifier: 13, Dread: "D6",
 		Perks: []string{"Choose your best chum from the party. Choose one Best Chum Perk:\nLighten the Mood: Say something funny or kind to heal your best chum for 1d12\n" +
 			"Take the Hit: Take Dread for your best Chum\n" +
 			"Share the Load: Suffer the consequences of your Best Chum's failed action.",
@@ -197,7 +197,7 @@ var CharacterClasses = map[string]CharacterClass{
 				"I would die for _____, but I don't think the feeling is mutual.",
 				"When we're alone, _____ seems to like me, but then makes fun of me in front of the others.",
 				"_____ is too proud to ask for help, so I'll give it without thanks."}}},
-	"Rascal": {Name: "Rascal", CourageModifier: "12", Dread: "D6",
+	"Rascal": {Name: "Rascal", CourageModifier: 12, Dread: "D6",
 		Perks: []string{"Choose your style:\nFootpad: You always have lockpicks on hand and gain Advantage when picking locks.\n" +
 			"Charlatan: You have an elaborate alias, complete with a disguise kit that makes you look like another species.\n" +
 			"Ruffian: Roll+Might Once per session, knock an unsuspecting Goon or Bruiser unconscious.",

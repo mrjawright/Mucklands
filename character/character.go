@@ -9,11 +9,10 @@ import (
 )
 
 var attributeNames = [...]string{"Vim", "Vigor", "Knack", "Knowhow"}
-
-type Attribute struct {
-	Name     string
-	Modifier int
-}
+var attributeSkills = map[string][]string{"Vim":[]string {"Charm", "Inspire", "Mettle", "Perception"}, 
+"Vigor": []string {"Athletics", "Intimidate", "Might", "Vitality"}, 
+"Knack":[]string {"Nimbleness", "Search", "Sneak", "Trickery"}, 
+"Knowhow":[]string {"Lore", "Realms", "Tinker", "Wilderness"}}
 
 type Stats struct {
 	Courage     int
@@ -23,24 +22,18 @@ type Stats struct {
 }
 
 type Skill struct {
-	Attribute string
-	Name      string
-	Bonus     int
-	Penalty   int
-}
-
-func setQuestPoints(character *Character) {
-	idx := slices.IndexFunc(character.Attributes, func(a Attribute) bool { return a.Name == "Knowhow" })
-	character.QuestPoints = 3 + character.Attributes[idx].Modifier
+	Name     string
+	Modifier int
 }
 
 type Character struct {
 	Name       string
-	Class      characterClasses.CharacterClass
+	Class      string
 	Species    string
-	Attributes []Attribute
+	Attributes map[string]int
+	Dread      string
 	Stats
-	Skills        []Skill
+	Skills        map[string]Skill
 	Abilities     []string
 	Perks         []string
 	Backstory     string
@@ -51,9 +44,43 @@ type Character struct {
 	Inventory     []equipment.Equipment
 }
 
+func setStats(character *Character) {
+	character.QuestPoints = 3 + character.Attributes["Knowhow"]
+	character.Attack = character.Attributes["Vigor"]
+	character.Defense = -1 * character.Attributes["Knack"]
+}
+
+func setSkillModifiers(character *Character){
+	modifiers := map[int][]int{2:{2,2,2,1}, 1:{1,1,1,0}, 0:{0,0,0,1}, -1:{-1,-1,-1,0}}
+
+	for a,m := range character.Attributes{
+		var assignedSkill []string
+		var skillName string
+		for skillmod := range modifiers[m]{
+			idx :=-1
+			for idx == -1{
+				skillIdx := dice.GetRandomIndex(4)
+				skillName = attributeSkills[a][skillIdx]
+				idx = slices.IndexFunc(assignedSkill, func(skill string) bool { return skill == skillName })
+			}
+			assignedSkill = append(assignedSkill, skillName)
+			character.Skills[a]=Skill{Name: skillName, Modifier: skillmod}
+		}
+	}
+}
+
 func initCharacter(character *Character) {
-	for x := 0; x < len(attributeNames); x++ {
-		character.Attributes = append(character.Attributes, Attribute{attributeNames[x], 0})
+	var assignedAttributes []string
+	for _, x := range []int{2, 1, 0, -1} {
+		idx := -1
+		var attrIdx int = -1
+		for idx == -1 {
+			attrIdx = dice.GetRandomIndex(4)
+			var attrName string = attributeNames[attrIdx]
+			idx = slices.IndexFunc(assignedAttributes, func(attr string) bool { return attr == attrName })
+		}
+		assignedAttributes = append(assignedAttributes, attributeNames[attrIdx])
+		character.Attributes[attributeNames[attrIdx]] = x
 	}
 }
 
@@ -62,30 +89,30 @@ func selectClass(character *Character) {
 	idx := dice.GetRandomIndex(len(characterClasses.ClassNames))
 	className := characterClasses.ClassNames[idx]
 	selectedClass := characterClasses.CharacterClasses[className]
-	newClass := characterClasses.CharacterClass{}
-	newClass.Name = selectedClass.Name
-	newClass.Abilities = selectedClass.Abilities
-	newClass.Perks = selectedClass.Perks
-	newClass.Story.Relationships = selectedClass.Story.Relationships
+	character.Class = className
+	character.Stats.Courage = selectedClass.CourageModifier + character.Attributes["Vim"]
+	character.Dread = selectedClass.Dread
+	character.Abilities = selectedClass.Abilities
+	character.Perks = selectedClass.Perks
+	character.Relationships = selectedClass.Story.Relationships
 	backstoryIdx := dice.GetRandomIndex(6)
-	newClass.Story.Backstory = []string{selectedClass.Story.Backstory[backstoryIdx]}
+	character.Backstory = selectedClass.Story.Backstory[backstoryIdx]
+	flawsIdx := dice.GetRandomIndex(6)
+	character.Flaws = selectedClass.Story.Flaws[flawsIdx]
+	idealsIdx := dice.GetRandomIndex(6)
+	character.Ideals = selectedClass.Story.Ideals[idealsIdx]
+	questIdx := dice.GetRandomIndex(6)
+	character.PersonalQuest = selectedClass.Story.PersonalQuest[questIdx]
 	fmt.Println("...got", character.Class)
 }
 
-func assignAttributeModifiers(character *Character) {
-	modifiers := []int{-1, 0, 1, 2}
-	for _, attrName := range attributeNames {
-		index := dice.GetRandomIndex(len(modifiers))
-		attr := Attribute{attrName, modifiers[index]}
-		modifiers[index] = modifiers[len(modifiers)-1]
-		modifiers[len(modifiers)-1] = 0
-		modifiers = modifiers[:len(modifiers)-1]
-		character.Attributes = append(character.Attributes, attr)
-	}
-}
 
-func BuildCharacter(character *Character) {
-	initCharacter(character)
-	assignAttributeModifiers(character)
-	selectClass(character)
+func BuildCharacter() Character {
+	var character Character = Character{} 
+	initCharacter(&character)
+	setStats(&character)
+	selectClass(&character)
+	setSkillModifiers(&character)
+	
+	return character
 }
