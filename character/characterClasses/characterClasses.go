@@ -93,7 +93,7 @@ var CharacterClasses = map[string]CharacterClass{
 			"Winter Hat: (Dark Blue, Purple, Grey or White) Once per session, warm something up by touch.",
 			"Choose your bane:\nGnomes deal 1D12 Dread to their chosen Bane on an attack. Choose one creature to be your bane:\n"},
 		Abilities: []string{"Chronicler: Roll+Lore Once per session, create an historical fact, or any but of ancient knowledge, or trivia.",
-			"Magic Feet: Roll+Nimbleness Once per session, reroll a nimbleness check or performa spectacular acrobatic feat beyond the capabilities of normal creatures."},
+			"Magic Feet: Roll+Nimbleness Once per session, reroll a nimbleness check or perform a spectacular acrobatic feat beyond the capabilities of normal creatures."},
 		Story: ClassStory{Backstory: []string{"I was finishing my multi-volume manuscript on an esoteric subject.",
 			"I was replating trees in the Used T'be Forest, but the task became impossible.",
 			"I was searching for a reliquary of loast treasures, but the trail went cold.",

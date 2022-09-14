@@ -4,11 +4,18 @@ import (
 	"dice"
 	"fmt"
 	"math"
+	"sort"
 	"testing"
 
 	"github.com/montanaflynn/stats"
 	"golang.org/x/exp/maps"
 )
+
+func percentDifference(a float64, b float64) float64 {
+	mean, _ := stats.Mean([]float64{a, b})
+	diff := math.Abs(a - b)
+	return (diff / mean) * 100
+}
 
 func empiricalRuleTest(data []float64) {
 	min, _ := stats.Min(data)
@@ -27,12 +34,17 @@ func empiricalRuleTest(data []float64) {
 		min, max, mean, median, stdDev, skew, kurtosis)
 	fmt.Println(message)
 	fmt.Println("68-95-99.7, aka empirical, rule checks")
-	intervals := []float64{1, 2, 3}
-	for m := range intervals {
+	intervals := map[float64]float64{1: 64, 2: 95, 3: 99.7}
+	// go intentionally randomizes the order that range iterates maps.
+	keys := make([]float64, 0)
+	for k, _ := range intervals {
+		keys = append(keys, k)
+	}
+	sort.Float64s(keys)
+	for _, k := range keys {
 		var count float64 = 0
-		i := intervals[m]
-		stdDevMin := mean - (i * stdDev)
-		stdDevMax := mean + (i * stdDev)
+		stdDevMin := mean - (k * stdDev)
+		stdDevMax := mean + (k * stdDev)
 		for idx := range data {
 			f := data[idx]
 			if f >= stdDevMin && f <= stdDevMax {
@@ -40,12 +52,13 @@ func empiricalRuleTest(data []float64) {
 			}
 		}
 		percentage := (count / float64(len(data))) * 100
-		fmt.Println(fmt.Sprintf("percent of frequencies within %v of mean: %v", i, percentage))
+		pctDiff := percentDifference(intervals[k], percentage)
+		fmt.Println(fmt.Sprintf("percent of frequencies within %v standard deviations of mean: %v(%.2f)", k, percentage, pctDiff))
 	}
 
 }
 
-func diceRollTest(numberOfDie int, numberOfSides int, modifier int, t *testing.T) {
+func diceRollTest(numberOfDie int, numberOfSides int, modifier int, t *testing.T) bool {
 	fmt.Println(fmt.Sprintf("Testing %dD%d+ %d", numberOfDie, numberOfSides, modifier))
 	rolls := []float64{}
 	frequency := make(map[int]float64)
@@ -69,9 +82,10 @@ func diceRollTest(numberOfDie int, numberOfSides int, modifier int, t *testing.T
 	freqs := maps.Values(frequency)
 	fmt.Print("Frequency ")
 	empiricalRuleTest(freqs)
+	return true
 }
 
-func indexRollTest(arrayLen int, t *testing.T) {
+func indexRollTest(arrayLen int, t *testing.T) bool {
 	fmt.Println(fmt.Sprintf("Testing random index of %d items", arrayLen))
 	rolls := []float64{}
 	frequency := make(map[int]float64)
@@ -95,51 +109,50 @@ func indexRollTest(arrayLen int, t *testing.T) {
 	freqs := maps.Values(frequency)
 	fmt.Print("Frequency ")
 	empiricalRuleTest(freqs)
+	return true
 }
 
-func TestD2(t *testing.T) {
-	diceRollTest(1, 2, 0, t)
-}
-
-func TestD3(t *testing.T) {
-	diceRollTest(1, 3, 0, t)
-}
-
-func TestD4(t *testing.T) {
-	diceRollTest(1, 4, 0, t)
-}
-
-func TestD6(t *testing.T) {
-	diceRollTest(1, 6, 0, t)
-}
-
-func TestD8(t *testing.T) {
-	diceRollTest(1, 8, 0, t)
-}
-
-func TestD10(t *testing.T) {
-	diceRollTest(1, 10, 0, t)
-}
-
-func TestD12(t *testing.T) {
-	diceRollTest(1, 12, 0, t)
-}
-
-func TestD20(t *testing.T) {
-	diceRollTest(1, 20, 0, t)
-}
-
-func TestD100(t *testing.T) {
-	diceRollTest(1, 100, 0, t)
-}
-
-func TestD200(t *testing.T) {
-	diceRollTest(1, 200, 0, t)
-}
-func TestModifiedDieRoll(t *testing.T) {
-	diceRollTest(2, 10, 3, t)
+func TestDieRoll(t *testing.T) {
+	tests := []struct {
+		number   int
+		sides    int
+		modifier int
+	}{
+		{1, 2, 0},
+		{1, 3, 0},
+		{1, 4, 0},
+		{1, 6, 0},
+		{1, 8, 0},
+		{1, 10, 0},
+		{2, 10, 3},
+		{1, 12, 0},
+		{1, 20, 0},
+		{1, 100, 0},
+		{1, 200, 0},
+	}
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("%v, %v, %v", tc.number, tc.sides, tc.modifier), func(t *testing.T) {
+			if !diceRollTest(tc.number, tc.sides, tc.modifier, t) {
+				t.Fatalf("Test Failed for %v, %v, %v", tc.number, tc.sides, tc.modifier)
+			}
+			fmt.Println("#############################################")
+		})
+	}
 }
 
 func TestGetIndex(t *testing.T) {
+	tests := []struct {
+		number int
+	}{
+		{200},
+	}
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("%v", tc.number), func(t *testing.T) {
+			if !indexRollTest(tc.number, t) {
+				t.Fatalf("Test Failed for %v", tc.number)
+			}
+			fmt.Println("#############################################")
+		})
+	}
 	indexRollTest(200, t)
 }

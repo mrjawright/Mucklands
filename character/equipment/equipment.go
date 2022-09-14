@@ -5,13 +5,13 @@ import (
 )
 
 type Equipment struct {
-	name    string
-	cost    string
-	slots   int
-	carried bool
+	Name    string
+	Cost    string
+	Slots   int
+	Carried bool
 }
 
-var equipmentTable = map[int]Equipment{
+var EquipmentTable = map[int]Equipment{
 	1:   {"Axe (Bladed)", "Cheap", 2, true},
 	2:   {"Ball and chain (Flexible)", "Cheap", 2, true},
 	3:   {"Bat (Blunt)", "Cheap", 1, true},
@@ -215,5 +215,5 @@ var equipmentTable = map[int]Equipment{
 
 func RollEquipment() Equipment {
 	roll := dice.Roll(1, 200, 0)
-	return equipmentTable[roll]
+	return EquipmentTable[roll]
 }
