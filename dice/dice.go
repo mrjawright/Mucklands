@@ -25,3 +25,17 @@ func Roll(numberOfDie int, numberOfSides int, modifier int) int {
 func GetRandomIndex(arrayLen int) int {
 	return rand.Intn(arrayLen)
 }
+
+func GetRandomElement[T any](array []T) T {
+	var idx int = rand.Intn(len(array))
+	return array[idx]
+}
+
+func Shuffle[T any](array []T) []T {
+	idxs := rand.Perm(len(array))
+	var retVal []T = make([]T, 0)
+	for _, idx := range idxs {
+		retVal = append(retVal, array[idx])
+	}
+	return retVal
+}

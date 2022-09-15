@@ -14,7 +14,7 @@ type Equipment struct {
 
 func (e Equipment) String() string {
 	var retVal string
-	retVal = fmt.Sprintf("%-30s%-6d%-20s\n", e.Name, e.Slots, e.Cost)
+	retVal = fmt.Sprintf("%-36s%-6d%-20s\n", e.Name, e.Slots, e.Cost)
 	return retVal
 }
 

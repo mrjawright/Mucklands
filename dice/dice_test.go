@@ -112,6 +112,25 @@ func indexRollTest(arrayLen int, t *testing.T) bool {
 	return true
 }
 
+func elementRollTest(array []any, t *testing.T) bool {
+	fmt.Println(fmt.Sprintf("Testing random index of %d items", array))
+	frequency := make(map[any]float64)
+	for x := 0; x < 10000; x++ {
+		roll := dice.GetRandomElement(array)
+		if roll == nil {
+			t.Fatalf("Invalid roll! Got %d on %d sided die", roll, array)
+		}
+		frequency[roll] += 1
+	}
+	freqs := []float64{}
+	for _, value := range frequency {
+		freqs = append(freqs, value)
+	}
+	fmt.Print("Frequency ")
+	empiricalRuleTest(freqs)
+	return true
+}
+
 func TestDieRoll(t *testing.T) {
 	tests := []struct {
 		number   int
@@ -155,4 +174,21 @@ func TestGetIndex(t *testing.T) {
 		})
 	}
 	indexRollTest(200, t)
+}
+
+func TestGetElement(t *testing.T) {
+	tests := []struct {
+		elements []interface{}
+	}{
+		{elements: []interface{}{24, 40, 46, 36, 12, 39, 16, 47, 41, 49, 25, 26, 50, 38, 13, 28, 19, 14, 35, 30}},
+		{elements: []interface{}{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}},
+	}
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("%v", tc.elements), func(t *testing.T) {
+			if !elementRollTest(tc.elements, t) {
+				t.Fatalf("Test failed for %v", tc.elements)
+			}
+			fmt.Println("#############################################")
+		})
+	}
 }

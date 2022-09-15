@@ -26,7 +26,7 @@ var CharacterClasses = map[string]CharacterClass{
 			"Choose your instrument:\nString Instrument, Your instrument does +1 Healing.\n" +
 				"Percussion Instrument, Your instrument does +1 Dread\n" +
 				"Brass/Woodwind Instrument, Once per session, gain Advantage on an Inspire check\n",
-			"Choose your talent:\n Musician: when you heal someone roll the healing dice with  advantage.\n" +
+			"Choose your talent:\nMusician: when you heal someone roll the healing dice with  advantage.\n" +
 				"Storyteller: Once per session, when you tell a story, a party member gets an extra Quest Point for the session.\n" +
 				"Performer: Choose two Proficiencies: Acting, Impersonating, Dancing, Acrobatics"},
 		Abilities: []string{"Narrator: Roll+Inspire Once per session, narrate a desired outcome of a specific action beginning with the phrase \"And then...\".You receive a +1 bonus for rhyming.",

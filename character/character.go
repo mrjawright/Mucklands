@@ -6,11 +6,10 @@ import (
 	"equipment"
 	"fmt"
 	"homelands"
-	"slices"
 	"species"
 )
 
-var attributeNames = [...]string{"Vim", "Vigor", "Knack", "Knowhow"}
+var attributeNames = []string{"Vim", "Vigor", "Knack", "Knowhow"}
 var attributeSkills = map[string][]string{"Vim": {"Charm", "Inspire", "Mettle", "Perception"},
 	"Vigor":   {"Athletics", "Intimidate", "Might", "Vitality"},
 	"Knack":   {"Nimbleness", "Search", "Sneak", "Trickery"},
@@ -26,10 +25,10 @@ type Stats struct {
 func (s Stats) String() string {
 	var retVal string
 	retVal = fmt.Sprint("Stats:\n")
-	retVal += fmt.Sprintf("\tCourage: %d\n", s.Courage)
-	retVal += fmt.Sprintf("\tAttack: %d\n", s.Attack)
-	retVal += fmt.Sprintf("\tDefense: %d\n", s.Defense)
-	retVal += fmt.Sprintf("\tQuestPoints: %d\n", s.QuestPoints)
+	retVal += fmt.Sprintf("\tCourage    : %3d\n", s.Courage)
+	retVal += fmt.Sprintf("\tAttack     : %3d\n", s.Attack)
+	retVal += fmt.Sprintf("\tDefense    : %3d\n", s.Defense)
+	retVal += fmt.Sprintf("\tQuestPoints: %3d\n", s.QuestPoints)
 	return retVal
 }
 
@@ -84,7 +83,7 @@ func (c Character) strAttributes() string {
 
 func (c Character) strInventory() string {
 	var retVal string
-	retVal = fmt.Sprintf("%-30s%-6s%-20s", "Name", "Slots", "Cost")
+	retVal = fmt.Sprintf("%-36s%-6s%-20s\n", "Name", "Slots", "Cost")
 	for _, i := range c.Inventory {
 		retVal += fmt.Sprintf("%s", i.String())
 	}
@@ -146,17 +145,12 @@ func setSkillModifiers(character *Character) {
 	inventoryModifier := 0
 	character.Skills = make(map[string]map[string]int)
 	for a, m := range character.Attributes {
-		var assignedSkill []string = make([]string, 0)
-		var skillName string
+		fmt.Println(fmt.Sprintf("%s(%d) skills", a, m))
 		skillList := make(map[string]int)
-		for skillMod := range modifiers[m] {
-			idx := -2
-			for idx != -1 {
-				skillIdx := dice.GetRandomIndex(4)
-				skillName = attributeSkills[a][skillIdx]
-				idx = slices.IndexFunc(assignedSkill, func(skill string) bool { return skill == skillName })
-			}
-			assignedSkill = append(assignedSkill, skillName)
+		modifiers := dice.Shuffle(modifiers[m])
+		skillNames := dice.Shuffle(attributeSkills[a])
+		for idx, skillMod := range modifiers {
+			var skillName string = skillNames[idx]
 			skillList[skillName] = skillMod
 			if skillName == "Might" || skillName == "Vitality" {
 				inventoryModifier += skillMod
@@ -168,21 +162,13 @@ func setSkillModifiers(character *Character) {
 }
 
 func initCharacter(character *Character) {
-	var assignedAttributes []string = make([]string, 0)
 	character.Attributes = make(map[string]int)
-	for _, x := range []int{2, 1, 0, -1} {
-		idx := -2
-		var attrIdx int = -1
-		for idx != -1 {
-			attrIdx = dice.GetRandomIndex(4)
-			var attrName string = attributeNames[attrIdx]
-			idx = slices.IndexFunc(assignedAttributes, func(attr string) bool { return attr == attrName })
-		}
-		assignedAttributes = append(assignedAttributes, attributeNames[attrIdx])
-		fmt.Println(assignedAttributes)
-		character.Attributes[attributeNames[attrIdx]] = x
-		fmt.Println(character.Attributes)
+	attrs := dice.Shuffle(attributeNames)
+	for idx, x := range dice.Shuffle([]int{2, 1, 0, -1}) {
+		a := attrs[idx]
+		character.Attributes[a] = x
 	}
+	fmt.Println(character.Attributes)
 }
 
 func selectClass(character *Character) {
@@ -196,14 +182,10 @@ func selectClass(character *Character) {
 	character.Abilities = selectedClass.Abilities
 	character.Perks = selectedClass.Perks
 	character.Relationships = selectedClass.Story.Relationships
-	backstoryIdx := dice.GetRandomIndex(len(selectedClass.Story.Backstory))
-	character.Backstory = selectedClass.Story.Backstory[backstoryIdx]
-	flawsIdx := dice.GetRandomIndex(len(selectedClass.Story.Flaws))
-	character.Flaws = selectedClass.Story.Flaws[flawsIdx]
-	idealsIdx := dice.GetRandomIndex(len(selectedClass.Story.Ideals))
-	character.Ideals = selectedClass.Story.Ideals[idealsIdx]
-	questIdx := dice.GetRandomIndex(len(selectedClass.Story.PersonalQuest))
-	character.PersonalQuest = selectedClass.Story.PersonalQuest[questIdx]
+	character.Backstory = dice.GetRandomElement(selectedClass.Story.Backstory)
+	character.Flaws = dice.GetRandomElement(selectedClass.Story.Flaws)
+	character.Ideals = dice.GetRandomElement(selectedClass.Story.Ideals)
+	character.PersonalQuest = dice.GetRandomElement(selectedClass.Story.PersonalQuest)
 	fmt.Println("...got", character.Class)
 }
 
