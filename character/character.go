@@ -23,6 +23,16 @@ type Stats struct {
 	QuestPoints int
 }
 
+func (s Stats) String() string {
+	var retVal string
+	retVal = fmt.Sprint("Stats:\n")
+	retVal += fmt.Sprintf("\tCourage: %d\n", s.Courage)
+	retVal += fmt.Sprintf("\tAttack: %d\n", s.Attack)
+	retVal += fmt.Sprintf("\tDefense: %d\n", s.Defense)
+	retVal += fmt.Sprintf("\tQuestPoints: %d\n", s.QuestPoints)
+	return retVal
+}
+
 type Skill struct {
 	Name     string
 	Modifier int
@@ -35,10 +45,10 @@ type Character struct {
 	Homeland       string
 	Attributes     map[string]int
 	InventorySlots int
-	Proficiences   []string
+	Proficiencies  []string
 	Dread          string
 	Stats
-	Skills        map[string][]Skill
+	Skills        map[string]map[string]int
 	Abilities     []string
 	Perks         []string
 	Backstory     string
@@ -47,6 +57,82 @@ type Character struct {
 	PersonalQuest string
 	Relationships []string
 	Inventory     []equipment.Equipment
+}
+
+func (c Character) strAbilities() string {
+	var retVal string
+	for _, ability := range c.Abilities {
+		retVal += fmt.Sprintf("%s\n", ability)
+	}
+	return retVal
+}
+
+func (c Character) strAttributes() string {
+	var retVal string
+	retVal = "Attributes:\n"
+	//to for the order they're listed
+	for _, attr := range attributeNames {
+		retVal += fmt.Sprintf("\t%-8s: %-3d", attr, c.Attributes[attr])
+		retVal += "("
+		for s, m := range c.Skills[attr] {
+			retVal += fmt.Sprintf("%-10s:%-3d", s, m)
+		}
+		retVal += ")\n"
+	}
+	return retVal
+}
+
+func (c Character) strInventory() string {
+	var retVal string
+	retVal = fmt.Sprintf("%-30s%-6s%-20s", "Name", "Slots", "Cost")
+	for _, i := range c.Inventory {
+		retVal += fmt.Sprintf("%s", i.String())
+	}
+	return retVal
+}
+
+func (c Character) strPerks() string {
+	var retVal string
+	retVal = "Perks:\n"
+	for _, p := range c.Perks {
+		retVal += fmt.Sprintf("%s\n", p)
+	}
+	return retVal
+}
+
+func (c Character) strProficiencies() string {
+	var retVal string
+	retVal = "Proficiencies:\n"
+	for _, p := range c.Proficiencies {
+		retVal += fmt.Sprintf("\t%s\n", p)
+	}
+	return retVal
+}
+
+func (c Character) strRelationships() string {
+	var retVal string
+	retVal = "Relationships:\n"
+	var padLen int = 0
+	for _, r := range c.Relationships {
+		if padLen < len(r) {
+			padLen = len(r)
+		}
+	}
+	for idx, r := range c.Relationships {
+		retVal += fmt.Sprintf("(%d)%*s", idx+1, -padLen, r)
+		if idx%2 == 1 {
+			retVal += "\n"
+		} else {
+			retVal += " "
+		}
+	}
+	return retVal
+}
+
+func (c Character) String() string {
+	return fmt.Sprintf("Name: %s\nClass: %s Species:%s Homeland:%s Dread:%s\n%s\n%s\n%s\n%s\n%s\nBackstory:\n%s\nIdeals:%s\nFlaws:%s\nPersonal Quest:%s\n%s",
+		c.Name, c.Class, c.Species, c.Homeland, c.Dread, c.strAttributes(), c.strProficiencies(),
+		c.Stats.String(), c.strPerks(), c.strInventory(), c.Backstory, c.Ideals, c.Flaws, c.PersonalQuest, c.strRelationships())
 }
 
 func setStats(character *Character) {
@@ -58,11 +144,11 @@ func setStats(character *Character) {
 func setSkillModifiers(character *Character) {
 	modifiers := map[int][]int{2: {2, 2, 2, 1}, 1: {1, 1, 1, 0}, 0: {0, 0, 0, 1}, -1: {-1, -1, -1, 0}}
 	inventoryModifier := 0
-	character.Skills = make(map[string][]Skill)
+	character.Skills = make(map[string]map[string]int)
 	for a, m := range character.Attributes {
 		var assignedSkill []string = make([]string, 0)
 		var skillName string
-		skillList := []Skill{}
+		skillList := make(map[string]int)
 		for skillMod := range modifiers[m] {
 			idx := -2
 			for idx != -1 {
@@ -71,7 +157,7 @@ func setSkillModifiers(character *Character) {
 				idx = slices.IndexFunc(assignedSkill, func(skill string) bool { return skill == skillName })
 			}
 			assignedSkill = append(assignedSkill, skillName)
-			skillList = append(skillList, Skill{Name: skillName, Modifier: skillMod})
+			skillList[skillName] = skillMod
 			if skillName == "Might" || skillName == "Vitality" {
 				inventoryModifier += skillMod
 			}
@@ -110,13 +196,13 @@ func selectClass(character *Character) {
 	character.Abilities = selectedClass.Abilities
 	character.Perks = selectedClass.Perks
 	character.Relationships = selectedClass.Story.Relationships
-	backstoryIdx := dice.GetRandomIndex(6)
+	backstoryIdx := dice.GetRandomIndex(len(selectedClass.Story.Backstory))
 	character.Backstory = selectedClass.Story.Backstory[backstoryIdx]
-	flawsIdx := dice.GetRandomIndex(6)
+	flawsIdx := dice.GetRandomIndex(len(selectedClass.Story.Flaws))
 	character.Flaws = selectedClass.Story.Flaws[flawsIdx]
-	idealsIdx := dice.GetRandomIndex(6)
+	idealsIdx := dice.GetRandomIndex(len(selectedClass.Story.Ideals))
 	character.Ideals = selectedClass.Story.Ideals[idealsIdx]
-	questIdx := dice.GetRandomIndex(6)
+	questIdx := dice.GetRandomIndex(len(selectedClass.Story.PersonalQuest))
 	character.PersonalQuest = selectedClass.Story.PersonalQuest[questIdx]
 	fmt.Println("...got", character.Class)
 }
@@ -126,19 +212,25 @@ func selectSpecies(character *Character) {
 	selectedSpecies := species.SpeciesTable[species.SpeciesNames[speciesIdx]]
 	character.Species = selectedSpecies.Name
 	character.Perks = append(character.Perks, selectedSpecies.Perk)
-	bonusSkill := selectedSpecies.BonusSkills[dice.GetRandomIndex(2)]
-	for attr, skills := range character.Skills {
-		for idx, skill := range skills {
-			if skill.Name == bonusSkill {
-				character.Skills[attr][idx].Modifier += 1
+	if len(selectedSpecies.BonusSkills) > 1 {
+		bonusSkill := selectedSpecies.BonusSkills[dice.GetRandomIndex(2)]
+		fmt.Println("Bonus to " + bonusSkill)
+		for attr, skills := range character.Skills {
+			for skill, _ := range skills {
+				if skill == bonusSkill {
+					character.Skills[attr][skill] += 1
+				}
 			}
 		}
 	}
-	penaltySkill := selectedSpecies.PenaltySkills[dice.GetRandomIndex(2)]
-	for attr, skills := range character.Skills {
-		for idx, skill := range skills {
-			if skill.Name == penaltySkill {
-				character.Skills[attr][idx].Modifier -= 1
+	if len(selectedSpecies.PenaltySkills) > 1 {
+		penaltySkill := selectedSpecies.PenaltySkills[dice.GetRandomIndex(2)]
+		fmt.Println("Penalty to " + penaltySkill)
+		for attr, skills := range character.Skills {
+			for skill, _ := range skills {
+				if skill == penaltySkill {
+					character.Skills[attr][skill] -= 1
+				}
 			}
 		}
 	}
@@ -148,12 +240,12 @@ func selectSpecies(character *Character) {
 	character.Homeland = selectedHomeland.Name
 	character.Inventory = selectedHomeland.Equipment
 	proficencyIdx := dice.GetRandomIndex(len(selectedHomeland.Proficiencies))
-	character.Proficiences = append(character.Proficiences, selectedHomeland.Proficiencies[proficencyIdx])
+	character.Proficiencies = append(character.Proficiencies, selectedHomeland.Proficiencies[proficencyIdx])
 	var idx int = -1
 	for idx != proficencyIdx {
 		idx = dice.GetRandomIndex(len(selectedHomeland.Proficiencies))
 		if idx != proficencyIdx {
-			character.Proficiences = append(character.Proficiences, selectedHomeland.Proficiencies[idx])
+			character.Proficiencies = append(character.Proficiencies, selectedHomeland.Proficiencies[idx])
 			break
 		}
 	}

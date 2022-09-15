@@ -2,6 +2,7 @@ package equipment
 
 import (
 	"dice"
+	"fmt"
 )
 
 type Equipment struct {
@@ -9,6 +10,12 @@ type Equipment struct {
 	Cost    string
 	Slots   int
 	Carried bool
+}
+
+func (e Equipment) String() string {
+	var retVal string
+	retVal = fmt.Sprintf("%-30s%-6d%-20s\n", e.Name, e.Slots, e.Cost)
+	return retVal
 }
 
 var EquipmentTable = map[int]Equipment{
