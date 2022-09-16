@@ -6,6 +6,7 @@ import (
 	"equipment"
 	"fmt"
 	"homelands"
+	"slices"
 	"species"
 )
 
@@ -190,8 +191,18 @@ func selectClass(character *Character) {
 }
 
 func selectSpecies(character *Character) {
-	speciesIdx := dice.GetRandomIndex(len(species.SpeciesNames))
-	selectedSpecies := species.SpeciesTable[species.SpeciesNames[speciesIdx]]
+	var speciesIdx int
+	var selectedSpecies species.Species
+	if character.Class == "Gnome" {
+		speciesIdx = slices.IndexFunc(species.SpeciesNames, func(s string) bool { return s == "Gnome" })
+		selectedSpecies = species.SpeciesTable[species.SpeciesNames[speciesIdx]]
+	} else {
+		selectedSpeciesKey := dice.GetRandomElement(species.SpeciesNames)
+		for selectedSpeciesKey == "Gnome" {
+			selectedSpeciesKey = dice.GetRandomElement(species.SpeciesNames)
+		}
+		selectedSpecies = species.SpeciesTable[selectedSpeciesKey]
+	}
 	character.Species = selectedSpecies.Name
 	character.Perks = append(character.Perks, selectedSpecies.Perk)
 	if len(selectedSpecies.BonusSkills) > 1 {
